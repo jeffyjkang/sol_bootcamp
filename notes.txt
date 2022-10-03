@@ -1,0 +1,70 @@
+compare strings:
+keccak256(abi.encodePacked(arg1)) == keccack256(abi.encodePacked(arg2))
+strings similar to bytes but doesn't have length or index-access
+
+address: 20 bytes, 42 char hexadecimal, derived from last 20 bytes of public key controlling account with 0x prepended
+address object has balance member
+
+1 eth = 10^18 wei
+gas: max amount of gas used
+gasPrice: amount of wei per gas
+
+by default smart contract cannot receive eth, requires receive or fallback function
+only edge case is to allow another smart contract to (self destruct) and have new contract as beneficiary
+
+contract-contract: gas stipend
+receive() external payable: 2300 gas (gas stipend), no data sent, automatically hit the receive function, if data is sent requires fallback function
+fallback() external (optional payable): fb for data, 2300 max gas, last function that will be called if unknown function is called from contract
+
+first 4 bytes of the data's hash is the function signature (keccak hash)
+
+enums: one way to create user-defined type
+will be integers internally fit in uint8 -> 0-255, more than 256 values -> uint16
+eg:
+enum ActionChoices {GoLeft,GoRight,GoStraight,SitStill}
+ActionChoices choice;
+ActionChoices constant defaultChoice = ActionChoices.GoStraight;
+
+transaction errors will cascade, except for low level functions
+eg: address.send, address.call, address.delegatecall, address.staticcall
+revert(custom error) and require can return an error strings
+
+revert operation for require returns remaining gas
+invalid operation for assert consumes all gasPrice
+assert used to validate invariants
+require used to validate user input
+
+assert triggered either manually w/ assert, where assert(x) where x evals to false or:
+out of bounds index, div by zero or mod zero, byteshifting by neg amount, convert value too big or neg to enum, zero-init variable of internal func type
+
+require triggered, require(x) where x evals to false or:
+function call via msg call but it doesn't finish properly (except low level func calls), external func call to a contract not containing any code,
+your contract receives ether without the payable modifier, your contract receives ether at a getter func, address.transfer() fails
+
+try/catch: catch errors from within inter-contract calls
+catch error -> revert
+catch panic -> assert/ div by zero/ non-recoverable errors
+catch rest: custom errors -> error MyCustomError(paramType1, paramType2, ...)
+
+events:
+evm has logging functionality
+e.g: event MyEvent(uint _arg1, address indexed _arg2)
+used for return values from transactions, used externally to trigger functionality, used as cheap data storage, writing transactions cannot return values
+writing functions can't return data externally, instead return transaction hash, transactions can take long or may fail, idea is to use event instead
+apps can subscribe and listen to events through the rpc interface of an ethereum client
+events are inheritable members of contracts
+log and its event data is not accessible from within contracts
+indexed event parameters can be searched for later
+events are cheap compared to storage variables
+
+inheritance:
+multiple inheritance- c3 linearization (method order inheritance)
+polymorphism- using 'super' can access base contract
+inherited contracts are deployed as single contract, not separate
+inheritance key words:
+  virtual- in parent contract required to allow inheriting contracts to override method
+  override- defines functions that are overriding a base function
+  (thus can have both virtual and override)
+
+optimizations:
+  verify/publish your smart contract on etherscan (** look into this further **)
